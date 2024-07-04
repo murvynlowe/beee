@@ -1,0 +1,935 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class GameManager : MonoBehaviour
+{
+    public float gameVersion;
+
+    public AchievementManager achievementManager;
+    public LifeBoost lifeBoost;
+    public GameObject boostMenu;
+
+    public Banner banner;
+    public Player player;
+    public GameObject flames;
+    public PillarSpawner pillarSpawner;
+    public MenuAudioManager menuAudioManager;
+
+    public VoidSoul voidSoul;
+    public EndingSlides endingSlides;
+    public PauseWorldDescription pauseWorldDescription;
+
+    public SaveManager saveManager;
+
+    public TMP_Text selectedHighScore;
+    public GameObject selectedHighScoreParent;
+    public Text scoreText;
+    public int score;
+
+    public int highScoreGrass;
+    public int highScoreCity;
+    public int highScoreSky;
+    public int highScoreHeck;
+    public int highScoreCold;
+    public int highScoreSpace;
+    public int highScoreDream;
+
+    public float playerStartPositionY;
+
+    public int resetLivesNumber;
+
+    //references to menu items and buttons on the main menu
+    public GameObject startButton;
+    public GameObject gameOver;
+    public GameObject Spawner;
+    public GameObject titleCard;
+    public GameObject defaultPlayerObject;
+    public GameObject voidBeast;
+
+    public GameObject confirmWindow;
+
+    public GameObject howToDesc;
+    public GameObject scoreCanvas;
+    public GameObject voidMenuButton;
+    public GameObject collectionButton;
+    public GameObject creditsButton;
+    public GameObject creditsWindow;
+    public GameObject playerLifeIcon;
+    public GameObject collectionList;
+    public GameObject achievementDescription;
+
+    public GameObject pauseMenu;
+    public GameObject pauseButton;
+    public GameObject continueMenu;
+
+    public GameObject welcomeDemoMenu;
+    public bool hasBeenWelcomedToDemo = false;
+
+    //public TMP_Text livesText;
+    public TMP_Text menuLivesCount;
+    public TMP_Text achieveDescriptionText;
+
+    public bool isMainMenu = true;
+
+    //game objects to control classic mode
+    public GameObject mainMenuParent;
+    public GameObject storyModeCanvas;
+    public GameObject mainMenuButton;
+    public GameObject classicReplayButton;
+    public GameObject playMenu;
+    
+    public Text worldName;
+
+    //parent object to story mode elements
+    public GameObject storyModeUI;
+
+    //score for classic mode
+    public Text numberText;
+
+    // level array and values
+    public int defaultLevel = 0;
+    public GameObject[] levels;
+    public int selectedLevel = 0;
+    public List<int> unlockedLevels = new List<int>();
+
+    //the fading screen transition and world intro text
+    public float scaleTime = 1f;
+    public GameObject transitionObject;
+    private Coroutine currentCoroutine;
+    public GameObject targetObject;
+    public float delay = 2f;
+    public float fadeInDuration = 1f;
+    private CanvasGroup canvasGroup;
+
+    //an array that controls the spawners so no pillars when not in play
+    public GameObject[] spawners;
+    public GameObject activeSpawner;
+
+    public static bool unlimitedJumpHeight = false;
+    public static bool voidSoulEnabled = false;
+
+
+    private void Awake()
+    {
+        Application.targetFrameRate = 60;
+
+        playerStartPositionY = player.startHeight;
+    }
+
+    private void Start()
+    {
+        menuAudioManager.PlayIntroChimes();
+
+        saveManager.LoadGameData();
+
+        MainMenu();
+    }
+
+    public void ShowWelcomeMenu()
+    {
+        mainMenuParent.SetActive(false);
+        welcomeDemoMenu.SetActive(true);
+    }
+
+    public void CloseWelcomeMenu()
+    {
+        mainMenuParent.SetActive(true);
+        welcomeDemoMenu.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (Time.timeScale != 0f && isMainMenu == false)
+            {
+                GamePause();
+            }
+            else if (isMainMenu == false)
+            {
+                ResumeGame();
+            }
+        }
+    }
+
+    public void ConfirmWindow()
+    {
+        if (player.isPaused || !player.isAlive)
+        {
+            pauseMenu.SetActive(false);
+
+            confirmWindow.SetActive(true);
+        }
+
+        else if (!player.isPaused)
+        {
+            MainMenu();
+        }
+    }
+
+    public void BoostMenu()
+    {
+        mainMenuParent.SetActive(false);
+        playMenu.SetActive(false);
+        mainMenuButton.SetActive(false);
+
+        boostMenu.SetActive(true);
+        playerLifeIcon.SetActive(true);
+    }
+
+    public void NopeButton()
+    {
+        confirmWindow.SetActive(false);
+
+        pauseMenu.SetActive(true);
+    }
+
+    public void BoostNope()
+    {
+        boostMenu.SetActive(false);
+
+        mainMenuButton.SetActive(true);
+        playMenu.SetActive(true);
+
+        saveManager.SaveGameData();
+    }
+    
+    public void YepButton()
+    {
+        MainMenu();
+    }
+
+    public void MainMenu()
+    {
+        CheckHighScore();
+        UpdateHighScore();
+
+        Time.timeScale = 1;
+
+        DisableSpawners();
+
+        ClearCombs();
+
+        ClearPipes();
+
+        //ResetWorld();
+
+        ClearEnemy();
+
+        ResetPlayer();
+
+        CheckAndUnlockLevels();
+
+        AchievementDescriptionClose();
+
+        CloseWelcomeMenu();
+
+        player.CheckAndUnlockSkins();
+
+        player.gameObject.SetActive(true);
+
+        player.enabled = false;
+
+        boostMenu.SetActive(false);
+        gameOver.SetActive(false);
+        playMenu.SetActive(false);
+        mainMenuButton.SetActive(false);
+        howToDesc.SetActive(false);
+        storyModeCanvas.SetActive(false);
+        scoreCanvas.SetActive(false);
+        pauseButton.SetActive(false);
+        pauseMenu.SetActive(false);
+        continueMenu.SetActive(false);
+        voidMenuButton.SetActive(false);
+        collectionList.SetActive(false);
+        creditsWindow.SetActive(false);
+        confirmWindow.SetActive(false);
+        playerLifeIcon.SetActive(false);
+
+        selectedHighScoreParent.SetActive(true);
+        titleCard.SetActive(true);
+        mainMenuParent.SetActive(true);
+
+/*        if (hasBeenWelcomedToDemo == false)
+        {
+            ShowWelcomeMenu();
+            hasBeenWelcomedToDemo = true;
+        }*/
+
+        activeSpawner = null;
+
+        isMainMenu = true;
+
+        //ResetPlayerLives();
+        //player.lives = resetLivesNumber + lifeBoost.boostLives;
+        
+        ResetPlayerLives();
+
+        UpdateLives();
+
+        player.isPaused = false;
+
+        player.StartCoroutine(player.AnimatedScaling());
+
+        voidSoul.ResetBeast();
+
+        voidBeast.SetActive(false);
+
+        endingSlides.isAnimating = false;
+
+        //menuAudioManager.PlayIntroChimes();
+
+        saveManager.SaveGameData();
+
+        achievementManager.EnableButtons();
+
+        //banner.HideBannerAd();
+
+        
+    }
+
+    public void ResetPlayerLives()
+    {
+        player.lives = resetLivesNumber + lifeBoost.boostLives;
+    }
+
+    public void Play()
+    {
+/*        if (player.selectedSkin < 2 && selectedLevel < 3)
+        {*/
+            score = 0;
+            scoreText.text = score.ToString();
+            player.health = 1;
+
+            //disables objects not in use for play
+            gameOver.SetActive(false);
+            titleCard.SetActive(false);
+            mainMenuParent.SetActive(false);
+            playMenu.SetActive(false);
+            mainMenuButton.SetActive(false);
+            selectedHighScoreParent.SetActive(false);
+
+            //stuff that must be enabled for play
+            player.enabled = true;
+            pauseButton.SetActive(true);
+
+            if (selectedLevel != 7)
+            {
+                scoreCanvas.SetActive(true);
+            }
+
+            ClearPipes();
+
+            ClearCombs();
+
+            ClearEnemy();
+
+            ResetPlayer();
+
+            LoadSelectedLevel();
+
+            ActivateSpawner();
+
+            UpdatePlayerSettings();
+
+            //difficultyNumber = 0;
+
+            isMainMenu = false;
+
+            if (voidSoulEnabled == true)
+            {
+                voidSoul.gameObject.SetActive(true);
+            }
+            else
+            {
+                voidSoul.gameObject.SetActive(false);
+            }
+
+            achievementManager.CheckAchievement();
+        //}
+/*
+        else if (player.selectedSkin > 2)
+        {
+            return;
+        }*/
+    }
+
+    public void CheckHighScore()
+    {
+        if (selectedLevel == 0)
+        {
+            if (score > highScoreGrass)
+            {
+                highScoreGrass = score;
+            }
+        }
+        else if (selectedLevel == 1)
+        {
+            if (score > highScoreCity)
+            {
+                highScoreCity = score;
+            }
+        }
+        else if (selectedLevel == 2)
+        {
+            if (score > highScoreSky)
+            {
+                highScoreSky = score;
+            }
+        }
+        else if (selectedLevel == 3)
+        {
+            if (score > highScoreHeck)
+            {
+                highScoreHeck = score;
+            }
+        }
+        else if (selectedLevel == 4)
+        {
+            if (score > highScoreCold)
+            {
+                highScoreCold = score;
+            }
+        }
+        else if (selectedLevel == 5)
+        {
+            if (score > highScoreSpace)
+            {
+                highScoreSpace = score;
+            }
+        }
+        else if (selectedLevel == 6)
+        {
+            if (score > highScoreDream)
+            {
+                highScoreDream = score;
+            }
+        }
+    }
+
+    public void UpdateHighScore()
+    {
+        if (selectedLevel == 0)
+        {
+            selectedHighScore.text = "high score: " + highScoreGrass.ToString();
+        }
+        else if (selectedLevel == 1)
+        {
+            selectedHighScore.text = "high score: " + highScoreCity.ToString();
+        }
+        else if (selectedLevel == 2)
+        {
+            selectedHighScore.text = "high score: " + highScoreSky.ToString();
+        }
+        else if (selectedLevel == 3)
+        {
+            selectedHighScore.text = "high score: " + highScoreHeck.ToString();
+        }
+        else if (selectedLevel == 4)
+        {
+            selectedHighScore.text = "high score: " + highScoreCold.ToString();
+        }
+        else if (selectedLevel == 5)
+        {
+            selectedHighScore.text = "high score: " + highScoreSpace.ToString();
+        }
+        else if (selectedLevel == 6)
+        {
+            selectedHighScore.text = "high score: " + highScoreDream.ToString();
+        }
+    }
+
+    public void DisableSpawners()
+    {
+        //Disabled all the spawners no matter which world is currently selected
+        GameObject[] spawners = GameObject.FindGameObjectsWithTag("Spawner");
+        foreach (GameObject spawner in spawners)
+        {
+            spawner.SetActive(false);
+        }
+    }
+
+    public void ActivateSpawner()
+    {
+        if (activeSpawner != null && activeSpawner.activeSelf)
+        {
+            return;
+        }
+
+        Transform selectedLevelTransform = levels[selectedLevel].transform;
+
+        foreach (Transform child in selectedLevelTransform)
+        {
+            if (child.CompareTag("Spawner"))
+            {
+                child.gameObject.SetActive(true);
+                activeSpawner = child.gameObject;
+                break;
+            }
+        }
+    }
+
+    public void ResetWorld()
+    {
+        levels[0].SetActive(false);
+        levels[1].SetActive(false);
+        levels[2].SetActive(false);
+        levels[3].SetActive(false);
+        levels[4].SetActive(false);
+        levels[5].SetActive(false);
+        levels[6].SetActive(false);
+        levels[7].SetActive(false);
+        
+        selectedLevel = defaultLevel;
+
+        levels[selectedLevel].SetActive(true);
+    }
+
+    public void ResetPlayer()
+    {
+        player.transform.position = new Vector3(0f, playerStartPositionY, 0f);
+        player.transform.rotation = Quaternion.identity;
+        player.direction = Vector3.zero;
+
+        player.lavaBounceCount = 0;
+
+        player.playerCollisionEnabled = true;
+        player.health = 1;
+        flames.SetActive(false);
+        flames.transform.localScale = Vector3.zero;
+        player.isAlive = true;
+
+        player.AnimatedScaling();
+        player.GetComponent<Player>().StartCoroutine(player.GetComponent<Player>().InvulnerabilityFrames());
+    }
+
+    public void ClassicMode()
+    {
+        player.enabled = false;
+        mainMenuParent.SetActive(false);
+
+        playMenu.SetActive(true);
+        mainMenuButton.SetActive(true);
+        playerLifeIcon.SetActive(true);
+    }
+
+    public void HowTo()
+    {
+        player.enabled = false;
+        startButton.SetActive(false);
+        gameOver.SetActive(false);
+        titleCard.SetActive(false);
+        scoreCanvas.SetActive(false);
+        mainMenuParent.SetActive(false);
+
+        howToDesc.SetActive(true);
+        mainMenuButton.SetActive(true);
+    }
+
+    public void Credits()
+    {
+        player.enabled = false;
+        startButton.SetActive(false);
+        gameOver.SetActive(false);
+        titleCard.SetActive(false);
+        scoreCanvas.SetActive(false);
+        mainMenuParent.SetActive(false);
+
+        creditsWindow.SetActive(true);
+        mainMenuButton.SetActive(true);
+    }
+
+    public void UpdateLives()
+    {
+        menuLivesCount.text = "x " + player.lives.ToString();
+    }
+
+    public void CollectionScreen()
+    {
+        player.enabled = false;
+        startButton.SetActive(false);
+        gameOver.SetActive(false);
+        titleCard.SetActive(false);
+        scoreCanvas.SetActive(false);
+        mainMenuParent.SetActive(false);
+
+        collectionList.SetActive(true);
+        mainMenuButton.SetActive(true);
+    }
+
+    public void AchieveDescriptionOpen()
+    {
+        achievementDescription.SetActive(true);
+        UpdateAchievementDescription();
+    }
+
+    public void UpdateAchievementDescription()
+    {
+        //achieveDescriptionText
+    }
+
+    public void AchievementDescriptionClose()
+    {
+        achievementDescription.SetActive(false);
+    }
+
+    public void GameOver()
+    {
+        CheckHighScore();
+        UpdateHighScore();
+        UpdateLives();
+
+        pauseButton.SetActive(false);
+        //mainMenuButton.SetActive(true);
+        gameOver.SetActive(true);
+        menuAudioManager.PlayGameOverSound();
+    }
+
+    public void ContinueScreen()
+    {
+        CheckHighScore();
+        UpdateHighScore();
+
+        continueMenu.SetActive(true);
+
+        pauseButton.SetActive(false);
+        mainMenuButton.SetActive(true);
+        menuAudioManager.PlayGameOverSound();
+
+        UpdateLives();
+    }
+
+    public void Continue()
+    {
+        ResetPlayer();
+
+        player.enabled = true;
+
+        continueMenu.SetActive(false);
+        pauseButton.SetActive(true);
+        mainMenuButton.SetActive(false);
+
+        
+    }
+
+    public void GamePause()
+    {
+        CheckHighScore();
+        UpdateHighScore();
+
+        player.isPaused = true;
+
+        saveManager.SaveGameData();
+
+        Time.timeScale = 0;
+
+        pauseButton.SetActive(false);
+
+        pauseMenu.SetActive(true);
+        mainMenuButton.SetActive(true);
+
+        pauseWorldDescription.UpdatePauseDescription();
+
+        //banner.LoadBanner();
+        //banner.ShowBannerAd();
+    }
+
+    public void ResumeGame()
+    {
+        pauseMenu.SetActive(false);
+        mainMenuButton.SetActive(false);
+
+        pauseButton.SetActive(true);
+        
+        Time.timeScale = 1;
+
+        player.isPaused = false;
+
+        //banner.HideBannerAd();
+    }
+
+    public void increaseScore()
+    {
+        score++;
+        scoreText.text = score.ToString();
+    }
+
+    public int GetCurrentScore()
+    {
+        return score;
+    }
+
+    public void ClearPipes()
+    {
+        //scans for and destroys all pillars
+        Pipes[] pipes = FindObjectsOfType<Pipes>();
+        for (int i = 0; i < pipes.Length; i++)
+        {
+            Destroy(pipes[i].gameObject);
+        }
+    }
+
+    public void ClearCombs()
+    {
+        //scans for and destroys the golden comb power ups in the same way
+        GoldenComb[] goldenComb = FindObjectsOfType<GoldenComb>();
+        for (int i = 0; i < goldenComb.Length; i++)
+        {
+            Destroy(goldenComb[i].gameObject);
+        }
+    }
+
+    public void ClearEnemy()
+    {
+        //scans for and destroys all enemy
+        BusinessBees[] enemy = FindObjectsOfType<BusinessBees>();
+        for (int i = 0; i < enemy.Length; i++)
+        {
+            Destroy(enemy[i].gameObject);
+        }
+    }
+
+    public void LoadSelectedLevel()
+    {
+        {
+            if (selectedLevel >= 0 && selectedLevel < unlockedLevels.Count && unlockedLevels[selectedLevel] < levels.Length)
+            {
+                int levelUnlockNumber = unlockedLevels[selectedLevel];
+
+                for (int i = 0; i < levels.Length; i++)
+                {
+                    levels[i].SetActive(i == levelUnlockNumber);
+                }
+            }
+        }
+    }
+
+    public void CheatLevels()
+    {
+        UnlockLevel(1);
+        UnlockLevel(2);
+        UnlockLevel(3);
+        UnlockLevel(4);
+        UnlockLevel(5);
+        UnlockLevel(6);
+        UnlockLevel(7);
+        OrganizeUnlockedLevels();
+    }
+
+    public void CheckAndUnlockLevels()
+    {
+        UnlockLevel(0); // grasslands unlocked default
+
+        if (achievementManager.oceansOfGreen)
+        {
+            UnlockLevel(1); // unlocks honeyburg
+        }
+
+        if (achievementManager.workerBeesAchievement)
+        {
+            UnlockLevel(2); // unlocks world above
+        }
+
+        if (achievementManager.goAnywhereAchievement)
+        {
+            UnlockLevel(3); // unlocks heck
+        }
+
+        if (achievementManager.heckRaiser)
+        {
+            UnlockLevel(4); // unlocks the cold place
+        }
+
+        if (achievementManager.theLandOfAlwaysWinterAchievement)
+        {
+            UnlockLevel(5); // unlocks space
+        }
+
+        if (achievementManager.cosmicBackgroundAchievement)
+        {
+            UnlockLevel(6); // unlocks the dream dimension
+        }
+
+        if (achievementManager.boulevardOfSomethingOrOtherAchievement)
+        {
+            UnlockLevel(7); // unlocks the void
+        }
+
+        OrganizeUnlockedLevels();
+    }
+
+    public void UnlockLevel(int levelUnlockNumber)
+    {
+        if (levelUnlockNumber >= 0 && levelUnlockNumber < levels.Length)
+        {
+            if (!unlockedLevels.Contains(levelUnlockNumber))
+            {
+                unlockedLevels.Add(levelUnlockNumber);
+            }
+        }
+    }
+
+    public void WorldScrollLeft()
+    {
+        if (unlockedLevels.Count > 0)
+        {
+            selectedLevel = (selectedLevel - 1 + unlockedLevels.Count) % unlockedLevels.Count;
+        }
+
+        player.enabled = false;
+
+        EnableSelectedLevel();
+
+        GameObject[] spawners = GameObject.FindGameObjectsWithTag("Spawner");
+        foreach (GameObject spawner in spawners)
+        {
+            spawner.SetActive(false);
+        }
+
+
+    }
+
+    public void WorldScrollRight()
+    {
+        if (unlockedLevels.Count > 0)
+        {
+            selectedLevel = (selectedLevel + 1 + unlockedLevels.Count) % unlockedLevels.Count;
+        }
+
+        player.enabled = false;
+
+        EnableSelectedLevel();
+
+        GameObject[] spawners = GameObject.FindGameObjectsWithTag("Spawner");
+        foreach (GameObject spawner in spawners)
+        {
+            spawner.SetActive(false);
+        }
+
+        
+    }
+
+    public void EnableSelectedLevel()
+    {
+        if (selectedLevel >= 0 && selectedLevel < unlockedLevels.Count && unlockedLevels[selectedLevel] < levels.Length)
+        {
+            int levelUnlockNumber = unlockedLevels[selectedLevel];
+
+            GameObject selectedLevelObject = levels[unlockedLevels[selectedLevel]];
+
+            for (int i = 0; i < levels.Length; i++)
+            {
+                levels[i].SetActive(i == levelUnlockNumber);
+            }
+
+            if (worldName != null)
+            {
+                worldName.text = selectedLevelObject.name;
+            }
+        }
+
+        UpdateHighScore();
+    }
+
+    string GetLevelTitle(int levelIndex)
+    {
+        return levelIndex.ToString();
+    }
+
+    public void OrganizeUnlockedLevels()
+    {
+        unlockedLevels.Sort((a, b) => Array.IndexOf(levels, levels[a]).CompareTo(Array.IndexOf(levels, levels[b])));
+    }
+
+    public void VoidDefeatedContinueScreen()
+    {
+        voidMenuButton.SetActive(true);
+
+        endingSlides.isAnimating = false;
+    }
+
+    public void VoidDefeatedContinueButton()
+    {
+        MainMenu();
+
+        if (achievementManager.didntExpectGetThisFarAchievement == false)
+        {
+            achievementManager.ShowAchievementToast("I Didn't Expect To Get This Far");
+            achievementManager.didntExpectGetThisFarAchievement = true;
+            achievementManager.PlayAnimateSkinToast();
+            achievementManager.CheckAchievement();
+        }
+    }
+
+    public void UpdatePlayerSettings()
+    {
+        switch (selectedLevel)
+        {
+            // Honeyburg
+            case 1:
+                player.gravity = -200; // Adjust gravity for level 2
+                player.strength = 60; // Adjust strength for level 2
+                break;
+
+            // The World Above
+            case 2:            
+                player.gravity = -90; // Adjust gravity for level 1
+                player.strength = 60; // Adjust strength for level 1
+                GameManager.unlimitedJumpHeight = true;
+                break;
+
+            // Planes of Heck
+            case 3:
+                player.gravity = -200; // Adjust gravity for level 2
+                player.strength = 50; // Adjust strength for level 2
+                break;
+
+            // The Cold Place
+            case 4:
+                player.gravity = -150; // Default values if level not recognized
+                player.strength = 70; // Default values if level not recognized
+                GameManager.unlimitedJumpHeight = false;
+                GameManager.voidSoulEnabled = false;
+                voidSoul.gameObject.SetActive(false);
+                break;
+
+            // Space
+            case 5:
+                player.gravity = -90; // Adjust gravity for level 2
+                player.strength = 50; // Adjust strength for level 2
+                GameManager.unlimitedJumpHeight = true;
+                break;
+
+            // Dream Dimension
+            case 6:
+                player.gravity = -123; // Adjust gravity for level 3
+                player.strength = 55; // Adjust strength for level 3
+                GameManager.unlimitedJumpHeight = true;
+                break;
+
+            // The Void
+            case 7:
+                player.gravity = -150; // Adjust gravity for level 2
+                player.strength = 70; // Adjust strength for level 2
+                GameManager.voidSoulEnabled = true;
+                voidSoul.gameObject.SetActive(true);
+                GameManager.unlimitedJumpHeight = true;
+                break;
+
+            // Add more cases for other levels as needed
+
+            //It will default to these settings
+            default:
+                player.gravity = -150; // Default values if level not recognized
+                player.strength = 70; // Default values if level not recognized
+                GameManager.unlimitedJumpHeight = false;
+                GameManager.voidSoulEnabled = false;
+                voidSoul.gameObject.SetActive(false);
+                break;
+        }
+    }
+}
