@@ -1,0 +1,88 @@
+using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class EndingSlides : MonoBehaviour
+{
+    public GameObject textBoxPrefab;
+    public GameManager gameManager;
+
+    public float fadeInDuration = 1f;
+    public float moveUpDuration = 2f;
+    public float delayDuration = 1f;
+    public float moveOffScreenDuration = 1f;
+    public float fadeOutDuration = 1f;
+
+    public TextMeshProUGUI creditsText;
+    public string[] creditLines;
+    public float textChangeDuration = 2f;
+    public float creditsDuration = 10f;
+
+    public bool isAnimating = false;
+
+
+    public void StartEnding()
+    {
+        string[] yourCreditLines = new string[] { "Wow...", "Nice work!", " You defeated the void beast.", "Is this the kind of day you thought you'd be having?", "I hope you had fun.", "I'm very proud of you." };
+        StartCoroutine(AnimateTextBox(yourCreditLines));
+    }
+
+    private IEnumerator AnimateTextBox(string[] creditLines)
+    {
+        foreach (string line in creditLines)
+        {
+            // Instantiate the textBoxPrefab
+            GameObject textBoxInstance = Instantiate(textBoxPrefab, transform);
+
+            TMPro.TextMeshProUGUI textComponent = textBoxInstance.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            textComponent.text = line;
+
+            // Set the initial alpha
+            float alpha = 0f;
+
+            // Fade in
+            float startTime = Time.time;
+            float fadeInDuration = 1f;  // Adjust the duration as needed
+            while (alpha < 1f)
+            {
+                float elapsedTime = Time.time - startTime;
+                alpha = Mathf.SmoothStep(0f, 1f, elapsedTime / fadeInDuration);
+                SetAlpha(textComponent.gameObject, alpha);
+                yield return null;
+            }
+
+            // Wait for the text to be visible
+            yield return new WaitForSeconds(2f);  // Adjust the duration as needed
+
+            // Fade out
+            float fadeOutDuration = 1f;  // Adjust the duration as needed
+            startTime = Time.time;  // Declare start time here
+            while (alpha > 0f)
+            {
+                float elapsedTime = Time.time - startTime;
+                alpha = Mathf.SmoothStep(1f, 0f, elapsedTime / fadeOutDuration);
+                SetAlpha(textComponent.gameObject, alpha);
+                yield return null;
+            }
+
+            // Destroy the textBoxInstance when done
+            Destroy(textBoxInstance);
+
+            if (!isAnimating)
+                yield break;
+        }
+
+        //enable the button for continuing
+        gameManager.VoidDefeatedContinueScreen();
+    }
+
+    private void SetAlpha(GameObject obj, float alpha)
+    {
+        CanvasRenderer[] renderers = obj.GetComponentsInChildren<CanvasRenderer>();
+        foreach (CanvasRenderer renderer in renderers)
+        {
+            renderer.SetAlpha(alpha);
+        }
+    }
+}
