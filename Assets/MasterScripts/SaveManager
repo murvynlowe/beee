@@ -1,0 +1,237 @@
+// this is saving for mobile
+using UnityEngine;
+using System;
+using System.Reflection;
+using System.Text;
+
+public class SaveManager : MonoBehaviour
+{
+    [System.Serializable]
+    public class AchievementSaveData
+    {
+        public bool welcomeAchievement;
+
+        //Misc
+        public bool combsAchievement1;
+        public bool combsAchievement2;
+        public bool combsAchievement3;
+        public bool combsAchievement4;
+        public bool randomAchievement1;
+
+        //Grasslands
+        public bool braveNewWorldAchievement;
+        public bool niceStartAchievement;
+        public bool aBakerBuzzingAchievement;
+        public bool oceansOfGreen;
+        public bool grassTastesBad;
+        public bool gettingSomewhereAchievement;
+        public bool pollenEnthusiastAchievement;
+        public bool grassMasterAchievement;
+
+        //WorldAbove
+        public bool honeyBeeInTheSkyAchievement;
+        public bool canFlyTwiceAsHighAchievement;
+        public bool takeDiveAchievement;
+        public bool inHiveAchievement;
+        public bool glucoseAchievement;
+        public bool keepYourFeetAchievement;
+        public bool whenYourHeadAchievement;
+        public bool goAnywhereAchievement;
+        public bool mrBlueSkyAchievement;
+        public bool envyOfIcarusAchievement;
+        public bool heavensAchievement;
+
+        //Heck
+        public bool getLowAchievement;
+        public bool mister101Achievement;
+        public bool fromHecksHeartAchievement;
+        public bool heckRaiser;
+        public bool betterToReignAchievement;
+        public bool beelzebubAchieve;
+        public bool whatKindOfHoneyIsThisAchievement;
+        public bool hotHoneyAchievement;
+
+        //Space
+        public bool theFinalFrontierAchievement;
+        public bool starlightStarbrightAchievement;
+        public bool AstronautAchievement;
+        public bool greatDarkBeyond;
+        public bool cosmicBackgroundAchievement;
+        public bool theGreatCombOnSaturnAchievement;
+        public bool spaceLordAchievement;
+        public bool inSpaceAchievement;
+        public bool lightSpeedAchievement;
+
+        //Honeyburg
+        public bool theBeegCityAchievement;
+        public bool surplusMoneyAchievement;
+        public bool flyLowSailHighAchievement;
+        public bool justSleepingAchievement;
+        public bool workerBeesAchievement;
+        public bool greatGatsbeeAchievement;
+        public bool mayorOfHoneyburg;
+
+        //Dream
+        public bool sweetDreamsAchievement;
+        public bool areMadeOfBeesAchievement;
+        public bool dreamToMakeBeelieveAchievement;
+        public bool eepy;
+        public bool armorForSleepAchievement;
+        public bool dreamWeaverAchievement;
+        public bool boulevardOfSomethingOrOtherAchievement;
+
+        //ColdPlace
+        public bool theLandOfAlwaysWinterAchievement;
+        public bool comeToTheLandOfIceAndSnowAchievement;
+        public bool ColdplayAchievement;
+        public bool letItGoAchievement;
+        public bool honeyColdOutsideAchievement;
+        public bool misterTenBelow;
+        public bool winterComing;
+        public bool theQueenInTheNorthAchievement;
+
+        //Void
+        public bool didntExpectGetThisFarAchievement;
+        public bool nowWeAreOneAchievement;
+
+        //selected skin
+        public int selectedSkin;
+
+        //high scores and level
+        public int highScoreGrass;
+        public int highScoreCity;
+        public int highScoreSky;
+        public int highScoreHeck;
+        public int highScoreCold;
+        public int highScoreSpace;
+        public int highScoreDream;
+        public int selectedLevel;
+
+        //boost stuff
+        public int boostDuration;
+        public int boostLives;
+
+        public int lives;
+    }
+
+    private AchievementSaveData data;
+    public AchievementManager achievementManager;
+    public Player player;
+    public GameManager gameManager;
+    public LifeBoost lifeBoost;
+
+    private string saveFileName = "buzzbuzz";
+    //private string saveFileExtension = ".beenary";
+
+    private void Awake()
+    {
+        //achievementManager = FindObjectOfType<AchievementManager>();
+        //LoadData();
+    }
+
+    private void SaveData()
+    {
+        AchievementSaveData data = new AchievementSaveData();
+
+        // Save achievement data
+        FieldInfo[] achievementFields = typeof(AchievementSaveData).GetFields(BindingFlags.Instance | BindingFlags.Public);
+
+        foreach (FieldInfo field in achievementFields)
+        {
+            FieldInfo managerField = typeof(AchievementManager).GetField(field.Name, BindingFlags.Instance | BindingFlags.Public);
+
+            if (managerField != null)
+            {
+                field.SetValue(data, managerField.GetValue(achievementManager));
+            }
+        }
+
+        data.selectedSkin = player.selectedSkin;
+        data.selectedLevel = gameManager.selectedLevel;
+
+        // Save high scores using PlayerPrefs
+        PlayerPrefs.SetInt("HighScoreGrass", gameManager.highScoreGrass);
+        PlayerPrefs.SetInt("HighScoreCity", gameManager.highScoreCity);
+        PlayerPrefs.SetInt("HighScoreSky", gameManager.highScoreSky);
+        PlayerPrefs.SetInt("HighScoreHeck", gameManager.highScoreHeck);
+        PlayerPrefs.SetInt("HighScoreCold", gameManager.highScoreCold);
+        PlayerPrefs.SetInt("HighScoreSpace", gameManager.highScoreSpace);
+        PlayerPrefs.SetInt("HighScoreDream", gameManager.highScoreDream);
+
+        // save boost data
+        PlayerPrefs.SetFloat("BoostDurationRemaining", lifeBoost.boostDuration);
+        //PlayerPrefs.SetInt("BoostedLives", lifeBoost.boostLives);
+
+        data.lives = player.lives;
+
+        // Serialize the AchievementSaveData object to JSON and save it in PlayerPrefs
+        string json = JsonUtility.ToJson(data);
+        PlayerPrefs.SetString(saveFileName, json);
+        PlayerPrefs.Save(); // Ensure data is saved immediately
+    }
+
+    private void LoadData()
+    {
+        if (PlayerPrefs.HasKey(saveFileName))
+        {
+            // Load the JSON data and deserialize it into the AchievementSaveData object
+            string json = PlayerPrefs.GetString(saveFileName);
+            AchievementSaveData data = JsonUtility.FromJson<AchievementSaveData>(json);
+
+            // Load achievement data
+            FieldInfo[] achievementFields = typeof(AchievementSaveData).GetFields(BindingFlags.Instance | BindingFlags.Public);
+
+            foreach (FieldInfo field in achievementFields)
+            {
+                FieldInfo managerField = typeof(AchievementManager).GetField(field.Name, BindingFlags.Instance | BindingFlags.Public);
+
+                if (managerField != null)
+                {
+                    managerField.SetValue(achievementManager, field.GetValue(data));
+                }
+            }
+
+            // Load player selectedSkin
+            player.selectedSkin = data.selectedSkin;
+            player.CheckAndUnlockSkins();
+            player.EnableSelectedSkin();
+
+            // Load high scores from PlayerPrefs
+            gameManager.highScoreGrass = PlayerPrefs.GetInt("HighScoreGrass", 0);
+            gameManager.highScoreCity = PlayerPrefs.GetInt("HighScoreCity", 0);
+            gameManager.highScoreSky = PlayerPrefs.GetInt("HighScoreSky", 0);
+            gameManager.highScoreHeck = PlayerPrefs.GetInt("HighScoreHeck", 0);
+            gameManager.highScoreCold = PlayerPrefs.GetInt("HighScoreCold", 0);
+            gameManager.highScoreSpace = PlayerPrefs.GetInt("HighScoreSpace", 0);
+            gameManager.highScoreDream = PlayerPrefs.GetInt("HighScoreDream", 0);
+
+            lifeBoost.boostDuration = data.boostDuration;
+            //lifeBoost.boostLives = data.boostLives;
+
+            player.lives = data.lives;
+
+            // save boost data
+            PlayerPrefs.SetFloat("BoostDurationRemaining", lifeBoost.boostDuration);
+            PlayerPrefs.SetInt("BoostedLives", lifeBoost.boostLives);
+
+            gameManager.selectedLevel = data.selectedLevel;
+
+            gameManager.CheckAndUnlockLevels();
+            gameManager.OrganizeUnlockedLevels();
+            gameManager.EnableSelectedLevel();
+
+            gameManager.UpdateHighScore();
+            gameManager.UpdateLives();
+        }
+    }
+
+    public void SaveGameData()
+    {
+        SaveData();
+    }
+
+    public void LoadGameData()
+    {
+        LoadData();
+    }
+}
