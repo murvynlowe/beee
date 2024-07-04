@@ -1,0 +1,97 @@
+using UnityEngine;
+
+public class InterfaceAdjuster : MonoBehaviour
+{
+    public bool alignTopLeft = false;
+    public bool alignTopMiddle = false;
+    public bool alignTopRight = false;
+    public bool alignMiddleLeft = false;
+    public bool alignCenter = true; // Default to center
+    public bool alignMiddleRight = false;
+    public bool alignBottomLeft = false;
+    public bool alignBottomMiddle = false;
+    public bool alignBottomRight = false;
+
+    private void Awake()
+    {
+        AdjustMenuItems();
+    }
+
+    private void Update()
+    {
+
+    }
+
+    private void AdjustMenuItems()
+    {
+        RectTransform[] menuItems = GetComponentsInChildren<RectTransform>();
+
+        foreach (RectTransform item in menuItems)
+        {
+            Vector2 anchorMin = Vector2.zero;
+            Vector2 anchorMax = Vector2.zero;
+            Vector2 pivot = Vector2.zero;
+
+            float screenRatio = (float)Screen.width / Screen.height;
+
+            if (alignTopLeft)
+            {
+                anchorMin = new Vector2(0f, 1f);
+                anchorMax = new Vector2(0f, 1f);
+                pivot = new Vector2(0f, 1f);
+            }
+            else if (alignTopMiddle)
+            {
+                anchorMin = new Vector2(0.5f, 1f);
+                anchorMax = new Vector2(0.5f, 1f);
+                pivot = new Vector2(0.5f, 1f);
+            }
+            else if (alignTopRight)
+            {
+                anchorMin = new Vector2(1f, 1f);
+                anchorMax = new Vector2(1f, 1f);
+                pivot = new Vector2(1f, 1f);
+            }
+            else if (alignMiddleLeft)
+            {
+                anchorMin = new Vector2(0f, 0.5f);
+                anchorMax = new Vector2(0f, 0.5f);
+                pivot = new Vector2(0f, 0.5f);
+            }
+            else if (alignCenter)
+            {
+                anchorMin = new Vector2(0.5f, 0.5f);
+                anchorMax = new Vector2(0.5f, 0.5f);
+                pivot = new Vector2(0.5f, 0.5f);
+            }
+            else if (alignMiddleRight)
+            {
+                anchorMin = new Vector2(1f, 0.5f);
+                anchorMax = new Vector2(1f, 0.5f);
+                pivot = new Vector2(1f, 0.5f);
+            }
+            else if (alignBottomLeft)
+            {
+                anchorMin = new Vector2(0f, 0f);
+                anchorMax = new Vector2(0f, 0f);
+                pivot = new Vector2(0f, 0f);
+            }
+            else if (alignBottomMiddle)
+            {
+                anchorMin = new Vector2(0.5f, 0f);
+                anchorMax = new Vector2(0.5f, 0f);
+                pivot = new Vector2(0.5f, 0f);
+            }
+            else if (alignBottomRight)
+            {
+                anchorMin = new Vector2(1f, 0f);
+                anchorMax = new Vector2(1f, 0f);
+                pivot = new Vector2(1f, 0f);
+            }
+
+            item.anchorMin = anchorMin;
+            item.anchorMax = anchorMax;
+            item.pivot = pivot;
+        }
+    }
+}
