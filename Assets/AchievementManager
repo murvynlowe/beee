@@ -1,0 +1,867 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Random = UnityEngine.Random;
+using UnityEngine.EventSystems;
+
+public class AchievementManager : MonoBehaviour
+{
+    public GameManager gameManager;
+    public SaveManager saveManager;
+    public Player player;
+    //public CollectionList collectionList;
+
+    private Queue<string> achievementQueue = new Queue<string>();
+
+    public GameObject toastPrefab;
+    //public GameObject levelUnlockPrefab;
+    public GameObject unlockToastPrefab;
+    public GameObject skinPrefab;
+    public TextMeshProUGUI descriptionText;
+
+    public GameObject[] achievementButtons;
+    public string[] achievementDescriptions;
+
+    public bool welcomeAchievement = false;
+
+    public void EnableButtons()
+    {
+        // Enable or disable buttons based on achievements
+        UpdateButtonsBasedOnAchievements();
+    }
+
+    void OnButtonClicked(int buttonIndex)
+    {
+        // Check if the button index is within the valid range
+        if (buttonIndex >= 0 && buttonIndex < achievementDescriptions.Length)
+        {
+            // Update the descriptionText with the corresponding achievement description
+            descriptionText.text = achievementDescriptions[buttonIndex];
+        }
+        else
+        {
+            Debug.LogError("Invalid button index!");
+        }
+    }
+
+    private void Start()
+    {
+        //TESTING ACHIEVEMENT - leave this in because its kind of fun
+        if (!welcomeAchievement)
+        {
+            ShowAchievementToast("Aw, Sweet!");
+            welcomeAchievement = true;
+        }
+
+        DisableAllButtons();
+
+        UpdateButtonsBasedOnAchievements();
+
+        for (int i = 0; i < achievementButtons.Length; i++)
+        {
+            int index = i;  // To capture the correct value of 'i' in the lambda expression
+
+            // Use EventTrigger to detect PointerClick on each GameObject
+            EventTrigger trigger = achievementButtons[i].AddComponent<EventTrigger>();
+            EventTrigger.Entry entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            entry.callback.AddListener((data) => { OnButtonClicked(index); });
+            trigger.triggers.Add(entry);
+        }
+    }
+
+    public void UpdateDescriptionBasedOnButton(Button pressedButton)
+    {
+        // Check if the pressedButton is in the achievementButtons array
+        int buttonIndex = System.Array.IndexOf(achievementButtons, pressedButton);
+
+        // Check if the button index is within the valid range
+        if (buttonIndex >= 0 && buttonIndex < achievementDescriptions.Length)
+        {
+            // Update the descriptionText with the corresponding achievement description
+            descriptionText.text = achievementDescriptions[buttonIndex];
+        }
+        else
+        {
+            Debug.LogError("Invalid button index!");
+        }
+    }
+
+
+    private void UpdateButtonsBasedOnAchievements()
+    {
+        // Ensure that the achievementButtons array is not null and has elements
+        if (achievementButtons != null && achievementButtons.Length > 0)
+        {
+            // Use SetActive to enable or disable GameObjects
+            achievementButtons[0].SetActive(welcomeAchievement);
+            achievementButtons[1].SetActive(combsAchievement1);
+            achievementButtons[2].SetActive(combsAchievement2);
+            achievementButtons[3].SetActive(combsAchievement3);
+            achievementButtons[4].SetActive(combsAchievement4);
+
+            achievementButtons[5].SetActive(braveNewWorldAchievement);
+            achievementButtons[6].SetActive(niceStartAchievement);
+            achievementButtons[7].SetActive(aBakerBuzzingAchievement);
+            achievementButtons[8].SetActive(gettingSomewhereAchievement);
+            achievementButtons[9].SetActive(oceansOfGreen);
+            achievementButtons[10].SetActive(grassTastesBad);
+            achievementButtons[11].SetActive(pollenEnthusiastAchievement);
+            achievementButtons[12].SetActive(grassMasterAchievement);
+
+            achievementButtons[13].SetActive(theBeegCityAchievement);
+            achievementButtons[14].SetActive(justSleepingAchievement);
+            achievementButtons[15].SetActive(surplusMoneyAchievement);
+            achievementButtons[16].SetActive(workerBeesAchievement);
+            achievementButtons[17].SetActive(greatGatsbeeAchievement);
+            achievementButtons[18].SetActive(flyLowSailHighAchievement);
+            achievementButtons[19].SetActive(mayorOfHoneyburg);
+  
+            achievementButtons[20].SetActive(mrBlueSkyAchievement);
+            achievementButtons[21].SetActive(honeyBeeInTheSkyAchievement);
+            achievementButtons[23].SetActive(canFlyTwiceAsHighAchievement);
+            achievementButtons[24].SetActive(takeDiveAchievement);
+            achievementButtons[25].SetActive(inHiveAchievement);
+            achievementButtons[26].SetActive(glucoseAchievement);
+            achievementButtons[27].SetActive(heavensAchievement);
+            achievementButtons[28].SetActive(envyOfIcarusAchievement);
+           
+            achievementButtons[29].SetActive(getLowAchievement);
+            achievementButtons[30].SetActive(mister101Achievement);
+            achievementButtons[31].SetActive(fromHecksHeartAchievement);
+            achievementButtons[32].SetActive(heckRaiser);
+            achievementButtons[33].SetActive(betterToReignAchievement);
+            achievementButtons[34].SetActive(beelzebubAchieve);
+            achievementButtons[35].SetActive(whatKindOfHoneyIsThisAchievement);
+            achievementButtons[36].SetActive(hotHoneyAchievement);
+            
+            achievementButtons[37].SetActive(comeToTheLandOfIceAndSnowAchievement);
+            achievementButtons[38].SetActive(ColdplayAchievement);
+            achievementButtons[39].SetActive(honeyColdOutsideAchievement);
+            achievementButtons[40].SetActive(letItGoAchievement);
+            achievementButtons[41].SetActive(misterTenBelow);
+            achievementButtons[42].SetActive(theLandOfAlwaysWinterAchievement);
+            achievementButtons[43].SetActive(winterComing);
+           
+            achievementButtons[44].SetActive(theFinalFrontierAchievement);
+            achievementButtons[45].SetActive(lightSpeedAchievement);
+            achievementButtons[46].SetActive(starlightStarbrightAchievement);
+            achievementButtons[47].SetActive(AstronautAchievement);
+            achievementButtons[48].SetActive(greatDarkBeyond);
+            achievementButtons[49].SetActive(cosmicBackgroundAchievement);
+            achievementButtons[50].SetActive(theGreatCombOnSaturnAchievement);
+            achievementButtons[51].SetActive(spaceLordAchievement);
+            
+            achievementButtons[52].SetActive(sweetDreamsAchievement);
+            achievementButtons[53].SetActive(areMadeOfBeesAchievement);
+            achievementButtons[54].SetActive(armorForSleepAchievement);
+            achievementButtons[55].SetActive(eepy);
+            achievementButtons[56].SetActive(boulevardOfSomethingOrOtherAchievement);
+            achievementButtons[57].SetActive(dreamToMakeBeelieveAchievement);
+            achievementButtons[58].SetActive(dreamWeaverAchievement);
+            
+            achievementButtons[59].SetActive(didntExpectGetThisFarAchievement);
+            achievementButtons[60].SetActive(nowWeAreOneAchievement);
+
+
+
+        }
+    }
+
+    private void DisableAllButtons()
+    {
+        //ensure that the achievementButtons array is not null and has elements
+        if (achievementButtons != null && achievementButtons.Length > 0)
+        {
+            //disable all buttons in the array
+            foreach (var button in achievementButtons)
+            {
+                button.SetActive(false);
+            }
+        }
+    }
+
+
+    public void CheckAchievement()
+    {
+        CheckMiscAchievement();
+
+        if (gameManager.selectedLevel == 0 )
+        {
+            CheckGrasslandsAchievement();
+        }
+        else if (gameManager.selectedLevel == 1)
+        {
+            CheckHoneyburgAchievement();
+        }
+        else if (gameManager.selectedLevel == 2)
+        {
+            CheckWorldAboveAchievement();
+        }
+        else if (gameManager.selectedLevel == 3)
+        {
+            CheckHeckAchievement();
+        }
+        else if (gameManager.selectedLevel == 4)
+        {
+            CheckColdPlaceAchievement();
+        }
+        else if (gameManager.selectedLevel == 5)
+        {
+            CheckSpaceAchievement();
+        }
+        else if (gameManager.selectedLevel == 6)
+        {
+            CheckDreamAchievement();
+        }
+        else if (gameManager.selectedLevel == 7)
+        {
+            CheckVoidAchievement();
+        }
+    }
+
+    // misc achievements
+    public bool combsAchievement1 = false;
+    public bool combsAchievement2 = false;
+    public bool combsAchievement3 = false;
+    public bool combsAchievement4 = false;
+    public bool randomAchievement1 = false;
+
+    public void CheckMiscAchievement()
+    {
+        if (player.goldenCombCounter >= 1 && !combsAchievement1)
+        {
+            ShowAchievementToast("Ooo, Shiny!");
+            combsAchievement1 = true;
+        }
+
+        else if (player.goldenCombCounter >= 12 && !combsAchievement2)
+        {
+            ShowAchievementToast("VERY shiny.");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            combsAchievement2 = true;
+        }
+
+        else if (player.goldenCombCounter >= 48 && !combsAchievement3)
+        {
+            ShowAchievementToast("All that glitters is gold. Or isn't it? I can't remember.");
+            combsAchievement3 = true;
+        }
+
+        else if (player.goldenCombCounter >= 96 && !combsAchievement4)
+        {
+            ShowAchievementToast("It do bee that way");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            combsAchievement4 = true;
+        }
+    }
+
+    //Grasslands
+    public bool braveNewWorldAchievement = false;
+    public bool niceStartAchievement = false;
+    public bool aBakerBuzzingAchievement = false;
+    public bool oceansOfGreen = false;
+    public bool grassTastesBad = false;
+    public bool gettingSomewhereAchievement = false;
+    public bool pollenEnthusiastAchievement = false;
+    public bool grassMasterAchievement = false;
+    //public bool coinTossAchievement = false;
+
+    public void CheckGrasslandsAchievement()
+    {
+        if (!braveNewWorldAchievement)
+        {
+            ShowAchievementToast("Grasslands Tourist");
+            braveNewWorldAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !niceStartAchievement)
+        {
+            ShowAchievementToast("Bumble Beginnings");
+            niceStartAchievement = true;
+        }
+
+        else if (gameManager.score >= 24 && !aBakerBuzzingAchievement)
+        {
+            ShowAchievementToast("Buzzin, buzzin, no cap.");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            aBakerBuzzingAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !gettingSomewhereAchievement)
+        {
+            ShowAchievementToast("Getting Somewhere!");
+            gettingSomewhereAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !oceansOfGreen)
+        {
+            ShowAchievementToast("Oceans of Green");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            oceansOfGreen = true;
+        }
+
+        else if (gameManager.score >= 60 && !grassTastesBad)
+        {
+            ShowAchievementToast("Grassss tastes bad");
+            grassTastesBad = true;
+        }
+
+        else if (gameManager.score >= 72 && !pollenEnthusiastAchievement)
+        {
+            ShowAchievementToast("Pollinator");
+            pollenEnthusiastAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !grassMasterAchievement)
+        {
+            ShowAchievementToast("Trial of the Grasses");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            grassMasterAchievement = true;
+        }
+    }
+
+    //Honeyburg
+    public bool theBeegCityAchievement = false;
+    //public bool airQualityAdvisoryAchievement = false;
+    public bool surplusMoneyAchievement = false;
+    public bool flyLowSailHighAchievement = false;
+    public bool justSleepingAchievement = false;
+    public bool workerBeesAchievement = false;
+    public bool greatGatsbeeAchievement = false;
+    public bool mayorOfHoneyburg = false;
+
+    public void CheckHoneyburgAchievement()
+    {
+        if (!theBeegCityAchievement)
+        {
+            ShowAchievementToast("Welcome To The Beeg City");
+            theBeegCityAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !justSleepingAchievement)
+        {
+            ShowAchievementToast("They're Just Sleeping.");
+            justSleepingAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !surplusMoneyAchievement)
+        {
+            ShowAchievementToast("Surplus Money");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            surplusMoneyAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !workerBeesAchievement)
+        {
+            ShowAchievementToast("Them's whatcha call worker bees.");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            workerBeesAchievement = true;
+        }
+
+        else if (gameManager.score >= 60 && !greatGatsbeeAchievement)
+        {
+            ShowAchievementToast("The Great Gatsbee");
+            greatGatsbeeAchievement = true;
+        }
+
+        else if (gameManager.score >= 72 && !flyLowSailHighAchievement)
+        {
+            ShowAchievementToast("Fly Low, Sail High");
+            flyLowSailHighAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !mayorOfHoneyburg)
+        {
+            ShowAchievementToast("Mayor of Honeyburg");
+            mayorOfHoneyburg = true;
+        }
+    }
+
+    //WorldAbove
+    public bool honeyBeeInTheSkyAchievement = false;
+    public bool canFlyTwiceAsHighAchievement = false;
+    public bool takeDiveAchievement = false;
+    public bool inHiveAchievement = false;
+    public bool glucoseAchievement = false;
+    public bool keepYourFeetAchievement = false;
+    public bool whenYourHeadAchievement = false;
+    public bool goAnywhereAchievement = false;
+    public bool mrBlueSkyAchievement = false;
+    public bool envyOfIcarusAchievement = false;
+    public bool heavensAchievement = false;
+
+    public void CheckWorldAboveAchievement()
+    {
+        if (!mrBlueSkyAchievement)
+        {
+            ShowAchievementToast("Mr. Blue Sky");
+            mrBlueSkyAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !honeyBeeInTheSkyAchievement)
+        {
+            ShowAchievementToast("Honey Bee In The Sky!");
+            honeyBeeInTheSkyAchievement = true;
+        }
+
+        else if (gameManager.score >= 24 && !canFlyTwiceAsHighAchievement)
+        {
+            ShowAchievementToast("I Can Fly Twice As High!");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            canFlyTwiceAsHighAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !takeDiveAchievement)
+        {
+            ShowAchievementToast("Take a dive...");
+            takeDiveAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !inHiveAchievement)
+        {
+            ShowAchievementToast("... in a hive.");
+            inHiveAchievement = true;
+        }
+
+        else if (gameManager.score >= 60 && !glucoseAchievement)
+        {
+            ShowAchievementToast("Glucose-Fructooooose!");
+            glucoseAchievement = true;
+        }
+
+        else if (gameManager.score >= 72 && !goAnywhereAchievement)
+        {
+            ShowAchievementToast("IIIII CAAAN GO ANYWHEERE");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            goAnywhereAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !heavensAchievement)
+        {
+            ShowAchievementToast("I have seen the heavens and I do not wish to go back.");
+            heavensAchievement = true;
+        }
+    }
+
+    //Heck
+    public bool getLowAchievement = false;
+    public bool mister101Achievement = false;
+    public bool fromHecksHeartAchievement = false;
+    public bool heckRaiser = false;
+    public bool betterToReignAchievement = false;
+    public bool beelzebubAchieve = false;
+    public bool whatKindOfHoneyIsThisAchievement = false;
+    public bool hotHoneyAchievement = false;
+
+    public void CheckHeckAchievement()
+    {
+        if (!getLowAchievement)
+        {
+            ShowAchievementToast("Bat Outta' Heck!");
+            getLowAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !mister101Achievement)
+        {
+            ShowAchievementToast("Mister Hundred and One!");
+            mister101Achievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !fromHecksHeartAchievement)
+        {
+            ShowAchievementToast("From Heck's Heart I Sting At Bee!");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            fromHecksHeartAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !heckRaiser)
+        {
+            ShowAchievementToast("Heck = raised");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            heckRaiser = true;
+        }
+
+        else if (gameManager.score >= 66 && !betterToReignAchievement)
+        {
+            ShowAchievementToast("Better To Reign In Heck");
+            betterToReignAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !beelzebubAchieve)
+        {
+            ShowAchievementToast("Bee-elzebub!");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            beelzebubAchieve = true;
+        }
+
+        if (whatKindOfHoneyIsThisAchievement == false && player.lavaBounceCount >= 1)
+        {
+            ShowAchievementToast("What Kind Of Honey IS This?");
+            whatKindOfHoneyIsThisAchievement = true;
+        }
+
+        else if (hotHoneyAchievement == false && player.lavaBounceCount >= 6)
+        {
+            ShowAchievementToast("Hot, HOT Honey");
+            hotHoneyAchievement = true;
+        }
+    }
+
+    //ColdPlace
+    public bool theLandOfAlwaysWinterAchievement = false;
+    public bool comeToTheLandOfIceAndSnowAchievement = false;
+    public bool ColdplayAchievement = false;
+    public bool letItGoAchievement = false;
+    public bool honeyColdOutsideAchievement = false;
+    public bool misterTenBelow = false;
+    public bool winterComing = false;
+    
+    public bool theQueenInTheNorthAchievement = false;
+
+    public void CheckColdPlaceAchievement()
+    {
+        if (!comeToTheLandOfIceAndSnowAchievement)
+        {
+            ShowAchievementToast("Come to the Land of the Ice and Snow");
+            comeToTheLandOfIceAndSnowAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !ColdplayAchievement)
+        {
+            ShowAchievementToast("Coldplay");
+            ColdplayAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !honeyColdOutsideAchievement)
+        {
+            ShowAchievementToast("Honey It's Cold Outside");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            honeyColdOutsideAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !letItGoAchievement)
+        {
+            ShowAchievementToast("LET IT GO");
+            letItGoAchievement = true;
+        }
+
+        else if (gameManager.score >= 60 && !misterTenBelow)
+        {
+            ShowAchievementToast("Mister 10 below!");
+            misterTenBelow = true;
+        }
+
+        else if (gameManager.score >= 72 && !theLandOfAlwaysWinterAchievement)
+        {
+            ShowAchievementToast("The Land Of Always Winter");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            theLandOfAlwaysWinterAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !winterComing)
+        {
+            ShowAchievementToast("Winter is Coming");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            winterComing = true;
+        }
+    }
+
+    //Space
+    public bool theFinalFrontierAchievement = false;
+    public bool starlightStarbrightAchievement = false;
+    public bool AstronautAchievement = false;
+    public bool greatDarkBeyond = false;
+    public bool cosmicBackgroundAchievement = false;
+    public bool theGreatCombOnSaturnAchievement = false;
+    public bool spaceLordAchievement = false;
+    public bool inSpaceAchievement = false;
+    public bool lightSpeedAchievement = false;
+
+    public void CheckSpaceAchievement()
+    {
+        if (!theFinalFrontierAchievement)
+        {
+            ShowAchievementToast("The Final Frontier");
+            theFinalFrontierAchievement = true;
+        }
+
+        if (!lightSpeedAchievement && player.lightSpeedAchievementCount >= 23)
+        {
+            ShowAchievementToast("Light Speed");
+            lightSpeedAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !starlightStarbrightAchievement)
+        {
+            ShowAchievementToast("Starlight, Starbright");
+            starlightStarbrightAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !AstronautAchievement)
+        {
+            ShowAchievementToast("Astronautical!");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            AstronautAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !greatDarkBeyond)
+        {
+            ShowAchievementToast("The Great Dark Beyond");
+            greatDarkBeyond = true;
+        }
+
+        else if (gameManager.score >= 60 && !cosmicBackgroundAchievement)
+        {
+            ShowAchievementToast("Cosmic Background Honey");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            cosmicBackgroundAchievement = true;
+        }
+
+        else if (gameManager.score >= 72 && !theGreatCombOnSaturnAchievement)
+        {
+            ShowAchievementToast("Ever notice the big comb on Saturn?");
+            theGreatCombOnSaturnAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !spaceLordAchievement)
+        {
+            ShowAchievementToast("SPACELORD (motha, motha)");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            spaceLordAchievement = true;
+        }
+    }
+
+    //Dream
+    public bool sweetDreamsAchievement = false;
+    public bool areMadeOfBeesAchievement = false;
+    public bool dreamToMakeBeelieveAchievement = false;
+    public bool eepy = false;
+    public bool armorForSleepAchievement = false;
+    public bool dreamWeaverAchievement = false;
+    public bool boulevardOfSomethingOrOtherAchievement = false;
+
+    public void CheckDreamAchievement()
+    {
+        if (!sweetDreamsAchievement)
+        {
+            ShowAchievementToast("Sweet Dreams...");
+            sweetDreamsAchievement = true;
+        }
+
+        if (gameManager.score >= 12 && !areMadeOfBeesAchievement)
+        {
+            ShowAchievementToast("... Are Made Of Bees");
+            areMadeOfBeesAchievement = true;
+        }
+
+        else if (gameManager.score >= 36 && !armorForSleepAchievement)
+        {
+            ShowAchievementToast("Armor For Sleep");
+            armorForSleepAchievement = true;
+        }
+
+        else if (gameManager.score >= 48 && !eepy)
+        {
+            ShowAchievementToast("The boy is EEPY");
+            StartCoroutine(AnimateSkinToast(skinPrefab));
+            eepy = true;
+        }
+
+        else if (gameManager.score >= 60 && !boulevardOfSomethingOrOtherAchievement)
+        {
+            ShowAchievementToast("The Boulevard of Something or Other");
+            StartCoroutine(AnimateLevelToast(unlockToastPrefab));
+            boulevardOfSomethingOrOtherAchievement = true;
+        }
+
+        else if (gameManager.score >= 72 && !dreamToMakeBeelieveAchievement)
+        {
+            ShowAchievementToast("Dream To Make Beelieve");
+            dreamToMakeBeelieveAchievement = true;
+        }
+
+        else if (gameManager.score >= 120 && !dreamWeaverAchievement)
+        {
+            ShowAchievementToast("Dreamweaver");
+            dreamWeaverAchievement = true;
+        }
+    }
+
+    //Void
+    public bool didntExpectGetThisFarAchievement = false;
+    public bool nowWeAreOneAchievement = false;
+
+    public void CheckVoidAchievement()
+    {
+
+    }
+
+    private float fadeInDuration = 0f;
+    private float moveUpDuration = 1f;
+    public float delayDuration = 1.5f;
+    private float moveOffScreenDuration = 1f;
+
+    //private float fadeOutDuration = 0f;
+    public float maxYOffset = 36f;
+    public float maxXOffset = 333;
+
+    private bool isAnimatingToast = false;
+
+    public void ShowAchievementToast(string achievementTitle)
+    {
+        // Enqueue the achievement
+        achievementQueue.Enqueue(achievementTitle);
+
+        // If not currently animating, start processing the queue
+        if (!isAnimatingToast)
+        {
+            StartCoroutine(ProcessAchievementQueue());
+        }
+    }
+
+    private IEnumerator ProcessAchievementQueue()
+    {
+        while (achievementQueue.Count > 0)
+        {
+            isAnimatingToast = true;
+
+            string achievementTitle = achievementQueue.Dequeue();
+
+            GameObject toast = Instantiate(toastPrefab, transform);
+
+            toast.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = achievementTitle;
+
+            // Start the coroutine and wait for it to finish
+            yield return StartCoroutine(AnimateToast(toast));
+
+            isAnimatingToast = false;  // Reset the flag
+        }
+    }
+
+    private IEnumerator AnimateToast(GameObject toast)
+    {
+        Vector3 startPosition = toast.transform.position;
+
+        float startTime = Time.time;
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        /*{
+            elapsedTime = Time.time - startTime;
+            float alpha = Mathf.SmoothStep(0f, 1f, elapsedTime / fadeInDuration);
+            //SetAlpha(toast, alpha);
+            yield return null;
+        }*/
+
+        yield return new WaitForSeconds(delayDuration / 2);
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveUpDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float yOffset = Mathf.SmoothStep(0f, maxYOffset, elapsedTime / moveUpDuration);
+            toast.transform.position = startPosition + new Vector3(0f, yOffset, 0f);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(delayDuration);
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveOffScreenDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float xOffset = Mathf.SmoothStep(0f, maxXOffset, elapsedTime / moveOffScreenDuration);
+            toast.transform.position = startPosition + new Vector3(xOffset, maxYOffset, 0f);
+            yield return null;
+        }
+
+        Destroy(toast);
+    }
+
+    public void PlayAnimateSkinToast()
+    {
+        StartCoroutine(AnimateSkinToast(skinPrefab));
+    }
+
+    private IEnumerator AnimateSkinToast(GameObject skinPrefab)
+    {
+        // Instantiate the prefab
+        GameObject levelToast = Instantiate(skinPrefab);
+
+        Vector3 startPosition = transform.position;
+
+        float startTime = Time.time;
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            yield return new WaitForSeconds(delayDuration / 2);
+        }
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveUpDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float yOffset = Mathf.SmoothStep(0f, maxYOffset + 15, elapsedTime / moveUpDuration);
+            levelToast.transform.position = startPosition + new Vector3(0f, yOffset, 0f);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(delayDuration);
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveOffScreenDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float xOffset = Mathf.SmoothStep(0f, maxXOffset, elapsedTime / moveOffScreenDuration);
+            levelToast.transform.position = startPosition + new Vector3(xOffset, maxYOffset + 15, 0f);
+            yield return null;
+        }
+
+        Destroy(levelToast);
+    }
+
+    private IEnumerator AnimateLevelToast(GameObject unlockToastPrefab)
+    {
+        // Instantiate the prefab
+        GameObject levelToast = Instantiate(unlockToastPrefab);
+
+        Vector3 startPosition = transform.position;
+
+        float startTime = Time.time;
+        float elapsedTime = 0f;
+        while (elapsedTime < fadeInDuration)
+        {
+            yield return new WaitForSeconds(delayDuration / 2);
+        }
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveUpDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float yOffset = Mathf.SmoothStep(0f, maxYOffset + 15, elapsedTime / moveUpDuration);
+            levelToast.transform.position = startPosition + new Vector3(0f, yOffset, 0f);
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(delayDuration);
+
+        startTime = Time.time;
+        elapsedTime = 0f;
+        while (elapsedTime < moveOffScreenDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            float xOffset = Mathf.SmoothStep(0f, maxXOffset, elapsedTime / moveOffScreenDuration);
+            levelToast.transform.position = startPosition + new Vector3(xOffset, maxYOffset + 15, 0f);
+            yield return null;
+        }
+
+        Destroy(levelToast);
+    }
+}
