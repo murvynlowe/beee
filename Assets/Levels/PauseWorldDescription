@@ -1,0 +1,65 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class PauseWorldDescription : MonoBehaviour
+{
+
+    public GameManager gameManager;
+    public GameObject background;
+    public TMP_Text[] levelDescriptions;
+
+    private void Start()
+    {
+  
+    }
+
+    public void UpdatePauseDescription()
+    {
+        // Check if GameManager reference is set and the selected level index is valid.
+        if (gameManager != null && gameManager.selectedLevel >= 0 && gameManager.selectedLevel < levelDescriptions.Length)
+        {
+            if (gameManager.selectedLevel != 7)
+            {
+                background.SetActive(true);
+
+                // Enable the description for the selected level and disable others.
+                for (int i = 0; i < levelDescriptions.Length; i++)
+                {
+                    if (i == gameManager.selectedLevel)
+                    {
+                        levelDescriptions[i].gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        levelDescriptions[i].gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            else
+            {
+                background.SetActive(false);
+
+                for (int i = 0; i < levelDescriptions.Length; i++)
+                {
+                    if (i == gameManager.selectedLevel)
+                    {
+                        levelDescriptions[i].gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        levelDescriptions[i].gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+    }
+
+    private void Update()
+    {
+
+    }
+}
