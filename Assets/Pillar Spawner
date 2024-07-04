@@ -1,0 +1,146 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class PillarSpawner : MonoBehaviour
+{
+    public GameManager gameManager;
+
+    public GameObject prefabA;
+    public GameObject prefabB;
+
+    public float minHeight = -1f;
+    public float maxHeight = 1f;
+
+    public float minScale;
+    public float maxScale;
+
+    public float prefabAProbability = 0.5f;
+
+    public float combMinScale = 0.5f;
+    public float combMaxScale = 2f;
+
+    public float minRotation;
+    public float maxRotation;
+
+    public float defaultSpawnRate = 2.0f;
+    private float spawnRate = 1.6f;
+    public float spawnRate1 = 1.5f;
+    public float spawnRate2 = 1.4f;
+    public float spawnRate3 = 1.3f;
+    public float spawnRate4 = 1.2f;
+    public float spawnRate5 = 1.1f;
+    public float spawnRate6 = 1.0f;
+    public float spawnRate7 = 0.9f;
+    
+
+    public bool isInitialSpawn = true;
+    private Coroutine spawnCoroutine;
+
+    string[] tagsToAdjust = { "goldenComb", "pollen" };
+    //private float minimumGlobalY = -1f;
+
+
+    private IEnumerator Spawn()
+    {
+        while (true)
+        {
+            if (!isInitialSpawn)
+            {
+                float randomValue = Random.value;
+
+                GameObject prefabToSpawn = randomValue < prefabAProbability ? prefabA : prefabB;
+
+                if (prefabToSpawn != null)
+                {
+                    GameObject spawnedPrefab = Instantiate(prefabToSpawn, transform.position, Quaternion.identity);
+
+                    spawnedPrefab.transform.position += Vector3.up * Random.Range(minHeight, maxHeight);
+                    spawnedPrefab.transform.localScale = Vector3.one * Random.Range(minScale, maxScale);
+                    float randomRotation = Random.Range(minRotation, maxRotation);
+                    spawnedPrefab.transform.rotation = Quaternion.Euler(0f, 0f, randomRotation);
+
+                    RotateGoldenCombChildrenOpposite(spawnedPrefab);
+                }
+            }
+
+            if (isInitialSpawn)
+            {
+                isInitialSpawn = false;
+            }
+
+            int score = gameManager.GetCurrentScore();
+
+            if (score == 12)
+            {
+                spawnRate = spawnRate1;
+            }
+            else if (score == 24)
+            {
+                spawnRate = spawnRate2;
+            }
+            else if (score == 36)
+            {
+                spawnRate = spawnRate3;
+            }
+            else if (score == 48)
+            {
+                spawnRate = spawnRate4;
+            }
+            else if (score == 60)
+            {
+                spawnRate = spawnRate5;
+            }
+            else if (score == 72)
+            {
+                spawnRate = spawnRate6;
+            }
+            else if (score == 86)
+            {
+                spawnRate = spawnRate7;
+            }
+            else if (score == 0)
+            {
+                spawnRate = defaultSpawnRate;
+            }
+
+            yield return new WaitForSeconds(spawnRate);
+        }
+    }
+
+    private void Start()
+    {
+        spawnRate = defaultSpawnRate;
+    }
+
+    private void OnEnable()
+    {
+        spawnCoroutine = StartCoroutine(Spawn());
+    }
+
+    private void OnDisable()
+    {
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
+
+        isInitialSpawn = true;
+    }
+
+    void RotateGoldenCombChildrenOpposite(GameObject spawnedPrefab)
+    {
+        Transform[] childTransforms = spawnedPrefab.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in childTransforms)
+        {
+            if (child.CompareTag("goldenComb"))
+            {
+                // Calculate the opposite rotation
+                Quaternion oppositeRotation = Quaternion.Inverse(spawnedPrefab.transform.rotation);
+                child.rotation = oppositeRotation * child.rotation;
+            }
+        }
+    }
+}
