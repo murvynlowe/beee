@@ -1,0 +1,27 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Pipes : MonoBehaviour
+{
+    public float minSpeed = 3f;
+    public float maxSpeed = 8f;
+    private float leftEdge;
+    private float speed;
+
+    private void Start()
+    {
+        leftEdge = Camera.main.ScreenToWorldPoint(Vector3.zero).x - 25f;
+        speed = Random.Range(minSpeed, maxSpeed);
+    }
+
+    private void Update()
+    {
+        transform.position += Vector3.left * speed * Time.deltaTime;
+
+        if (transform.position.x < leftEdge)
+        {
+            Destroy(gameObject);
+        }
+    }
+}
