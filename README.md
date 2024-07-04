@@ -4,5 +4,4 @@ All scripts were contributed by murvyn. The list of scripts here is not comprehe
 # a preview of beee
 
 ## Images of beee and friends
-//![Screenshot](Images/squaredefaultskin.gif)
-<img src="Images/squaredefaultskin.gif" alt="Description of the image" width="100" height="100">
+<img src="Images/squaredefaultskin.gif" alt="Description of the image" width="100" height="100"> <img src="Images/BEOcroppedSkin.gif" alt="Description of the image" width="100" height="100">
