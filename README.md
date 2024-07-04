@@ -5,4 +5,4 @@ All scripts were contributed by murvyn. The list of scripts here is not comprehe
 
 
 ## Images of beee and friends
-![Screenshot](beee/Images/squaredefaultskin.gif.gif)
+![Screenshot](Images/squaredefaultskin.gif)
