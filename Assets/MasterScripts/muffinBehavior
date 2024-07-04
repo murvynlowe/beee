@@ -1,0 +1,43 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class muffinBehavior : MonoBehaviour
+{
+    private float bottomEdge;
+
+    public float minSpeed = 2f;
+    public float maxSpeed = 5f;
+    public float minSpin = 30f;
+    public float maxSpin = 90f;
+    public float minSize = 0.5f;
+    public float maxSize = 2.0f;
+
+    private float fallSpeed;
+    private float rotationSpeed;
+
+
+    private void Start()
+    {
+        bottomEdge = Camera.main.ScreenToWorldPoint(Vector3.zero).y - 5f;
+
+        fallSpeed = Random.Range(minSpeed, maxSpeed);
+        rotationSpeed = Random.Range(minSpin, maxSpin);
+
+        float randomSize = Random.Range(minSize, maxSize);
+        transform.localScale = new Vector3(randomSize, randomSize, 1f);
+    }
+
+    private void Update()
+    {
+        if (transform.position.y < bottomEdge)
+        {
+            Destroy(gameObject, 0.5f);
+        }
+
+        transform.Rotate(Vector3.forward, rotationSpeed * Time.deltaTime);
+
+        Vector3 newPosition = transform.position - Vector3.up * fallSpeed * Time.deltaTime;
+        transform.position = newPosition;
+    }
+}
