@@ -1,0 +1,48 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SkinAnimation : MonoBehaviour
+{
+    public Sprite[] sprites;
+    private int spriteIndex;
+    private SpriteRenderer spriteRenderer;
+
+    public float animationSpeed = 0.25f;
+
+    public bool isAnimating;
+
+
+    void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        isAnimating = true;
+
+        InvokeRepeating(nameof(AnimateSprite), animationSpeed, animationSpeed);
+    }
+
+    void Update()
+    {
+/*        if (isAnimating == true)
+        {
+            InvokeRepeating(nameof(AnimateSprite), animationSpeed, animationSpeed);
+        }
+        else
+        {
+            CancelInvoke(nameof(AnimateSprite));
+        }*/
+    }
+
+    private void AnimateSprite()
+    {
+        spriteIndex++;
+
+        if (spriteIndex >= sprites.Length)
+        {
+            spriteIndex = 0;
+        }
+
+        spriteRenderer.sprite = sprites[spriteIndex];
+    }
+}
